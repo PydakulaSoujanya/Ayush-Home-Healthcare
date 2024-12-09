@@ -122,41 +122,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_customer'])) {
   ?>
   <div class="container mt-7">
     <h3 class="mb-4"> Capturing Service Request Form</h3>
-    
     <div class="form-section">
       <form action="services_db.php" method="POST">
         <div class="row">
-      
+    
           <div class="col-md-6">
-  <div class="input-field-container">
-    <label class="input-label">Customer Name</label>
-    <div style="display: flex; align-items: center;">
-    <select id="customer-name" class="styled-input" name="customer_name">
-  <option value="" disabled selected>Select Customer</option>
-  <?php foreach ($customers as $customer): ?>
-    <option value="<?= $customer['id'] ?>"><?= $customer['customer_name'] ?></option>
-  <?php endforeach; ?>
-</select>
-      <button 
-        type="button" 
-        class="btn btn-primary btn-sm ml-2" 
-        data-toggle="modal" 
-        data-target="#addCustomerModal" 
-        style="margin-left: 10px;">
-        +
-      </button>
-    </div>
+  <div style="display: flex; align-items: center;">
+    <input
+      id="customer-name"
+      class="styled-input"
+      name="customer_name"
+      oninput="if (this.value.length >= 3) searchCustomers(this.value)"
+      placeholder="Search by name or phone"
+      style="flex: 1; margin-right: 10px;"
+    />
+    <button
+      type="button"
+      class="btn btn-primary btn-sm"
+      data-toggle="modal"
+      data-target="#addCustomerModal"
+    >
+      +
+    </button>
+  </div>
+  <div class="suggestionItem">
+    <select id="customerSelect" style="display: none;"></select>
+    <ul id="customerList"></ul>
   </div>
 </div>
 
-   
-<div class="col-md-6">
+<div class="col-md-6 mt-3">
   <div class="input-field-container">
     <label class="input-label">Phone Number</label>
-    <input type="text" id="emergency_contact_number" class="styled-input" name="emergency_contact_number" placeholder="Phone Number" readonly />
+    <input
+      type="text"
+      id="emergency_contact_number"
+      class="styled-input"
+      name="emergency_contact_number"
+      placeholder="Phone Number"
+      readonly
+    />
   </div>
 </div>
-
           <!-- <div class="col-md-6">
             <div class="input-field-container">
               <label class="input-label">Email</label>
@@ -619,45 +626,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_customer'])) {
   }
 }
 
-document.getElementById('customer-name').addEventListener('change', function () {
-    var selectedCustomerId = this.value; // Get the selected customer ID
-    console.log('Selected Customer ID:', selectedCustomerId); // Debug log
-
-    // Validate the selected value
-    if (!selectedCustomerId) {
-        console.warn('No customer selected or invalid ID.');
-        return;
-    }
-
-    fetch('get_customer_details.php?id=' + encodeURIComponent(selectedCustomerId))
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(result => {
-            console.log('Fetch Response:', result); // Debug log the raw response
-
-            if (result.success) {
-                // Update the phone number field
-                document.getElementById('emergency_contact_number').value = result.data.emergency_contact_number || '';
-                console.log('Phone Updated:', result.data.emergency_contact_number); // Debug log
-            } else {
-                console.error('Error:', result.message || 'Unknown error');
-                alert('Failed to fetch customer details.');
-            }
-        })
-        .catch(error => {
-            console.error('Fetch Error:', error);
-
-            if (error.message.includes('Unexpected token')) {
-                alert('The server returned an invalid response. Please contact support.');
-            } else {
-                alert('An error occurred while fetching customer details. Please try again.');
-            }
-        });
-});
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -789,7 +757,47 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+function searchCustomers(search) {
+    const customerList = document.getElementById("customerList");
+    const inputFieldContactNo = document.getElementById("emergency_contact_number");
+    const suggestionsContainer = document.getElementById("customerSelect");
 
+    // Clear previous suggestions
+    customerList.innerHTML = "";
+    inputFieldContactNo.value = "";
+
+    if (search.trim() !== "") {
+      fetch(`search_customer.php?search=${search}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            const customers = data.data;
+
+            // Iterate over customers and create list items
+            for (let i = 0; i < customers.length; i++) {
+              const customer = customers[i];
+              const listItem = document.createElement("li");
+
+              listItem.textContent = `${customer.customer_name} - ${customer.emergency_contact_number}`;
+              listItem.dataset.contactNumber = customer.emergency_contact_number;
+
+              // Add click event to populate fields
+              listItem.addEventListener("click", () => {
+                inputFieldContactNo.value = customer.emergency_contact_number;
+                customerList.innerHTML = "";
+              });
+
+              customerList.appendChild(listItem);
+            }
+          } else {
+            console.error("Error: " + data.message);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching customer data:", error);
+        });
+    }
+  }
   </script>
 
 </body>
