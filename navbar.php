@@ -29,7 +29,7 @@
                     DASHBOARD <i class="fas fa-chevron-down dropdown-arrow-icon"></i>
                 </span>
                 <div class="navbar-dropdown-content">
-                    <a href="/invoice">Invoice</a>
+                    <a href="view_services.php">Capture Service</a>
                 </div>
             </div>
             <!-- Masters Dropdown -->
