@@ -1,6 +1,10 @@
 <?php
-// Connect to the database
-// Connect to the database
+
+
+error_reporting(E_ALL); // Report all PHP errors
+ini_set('display_errors', 1); // Display errors on the screen
+ini_set('display_startup_errors', 1); // Display errors during PHP's startup sequence
+
 include 'config.php';
 include 'navbar.php';
 
@@ -20,7 +24,7 @@ $searchTerm = isset($_GET['search']) ? $_GET['search'] : '';
 
 // Query to fetch data with pagination, search, and ordering by the created_at column
 $start = $pageIndex * $pageSize;
-$sql = "SELECT * FROM invoices WHERE customer_name LIKE '%$searchTerm%' ORDER BY created_at DESC LIMIT $start, $pageSize";
+$sql = "SELECT * FROM invoice WHERE customer_name LIKE '%$searchTerm%' ORDER BY created_at DESC LIMIT $start, $pageSize";
 $result = $conn->query($sql);
 
 // Get total number of records for pagination
@@ -99,45 +103,51 @@ $totalRecords = $countRow['total'];
 
         <!-- Table -->
         <div class="table-responsive">
-          <table class="table table-striped">
-            <thead>
-              <tr class="dataTable_headerRow">
-                <th>S.no</th>
-                <th>Customer Name</th>
-                <th>Service Type</th>
-                <th>From Date</th>
-                <th>End Date</th>
-                <th>Duration</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-            <?php
-              if ($result->num_rows > 0) {
-                  $serial = $start + 1;
-                  while ($row = $result->fetch_assoc()) {
-                      echo "<tr class='dataTable_row'>
-                              <td>{$serial}</td>
-                              <td>{$row['customer_name']}</td>
-                              <td>{$row['service_type']}</td>
-                              <td>{$row['from_date']}</td>
-                              <td>{$row['end_date']}</td>
-                               <td>{$row['duration']}</td>
-                              <td class='action-icons'>
-                                <i class='fas fa-eye' style='cursor: pointer;' data-bs-toggle='modal' data-bs-target='#viewModal' onclick='viewDetails(".json_encode($row).")'></i>
+         <table class="table table-striped">
+    <thead>
+        <tr class="dataTable_headerRow">
+            <th>S.no</th>
+            <th>Invoice ID</th>
+            <th>Customer Name</th>
+            <th>Mobile Number</th>
+            <th>Total Amount</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th>Created At</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        if ($result->num_rows > 0) {
+            $serial = $start + 1; // Assuming `$start` is defined elsewhere
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr class='dataTable_row'>
+                        <td>{$serial}</td>
+                        <td>{$row['invoice_id']}</td>
+                        <td>{$row['customer_name']}</td>
+                        <td>{$row['mobile_number']}</td>
+                        
+                        <td>{$row['total_amount']}</td>
+                        <td>{$row['due_date']}</td>
+                        <td>{$row['status']}</td>
+                        <td>{$row['created_at']}</td>
+                        
+                        <td class='action-icons'>
+                            <i class='fas fa-eye' style='cursor: pointer;' data-bs-toggle='modal' data-bs-target='#viewModal' onclick='viewDetails(".json_encode($row).")'></i>
+                            <a href='update_invoice.php?id={$row['id']}'><i class='fas fa-edit'></i></a>
+                            <a href='delete_invoice.php?id={$row['id']}' onclick='return confirm(\"Are you sure you want to delete?\")'><i class='fas fa-trash'></i></a>
+                        </td>
+                    </tr>";
+                $serial++;
+            }
+        } else {
+            echo "<tr><td colspan='12'>No data available</td></tr>";
+        }
+        ?>
+    </tbody>
+</table>
 
-                             <a href='update_invoice.php?id={$row['id']}'><i class='fas fa-edit'></i></a>
-                             <a href='delete_invoice.php?id={$row['id']}' onclick='return confirm(\"Are you sure you want to delete?\")'><i class='fas fa-trash'></i></a>
-                              </td>
-                            </tr>";
-                      $serial++;
-                  }
-              } else {
-                  echo "<tr><td colspan='6'>No data available</td></tr>";
-              }
-              ?>
-            </tbody>
-          </table>
         </div>
         
 
@@ -185,22 +195,24 @@ $totalRecords = $countRow['total'];
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-       function viewDetails(data) {
-      const modalContent = document.getElementById('modalContent');
-      modalContent.innerHTML = `
+      function viewDetails(data) {
+    const modalContent = document.getElementById('modalContent');
+    modalContent.innerHTML = `
         <table class="table table-bordered">
-          <tr><th>Customer Name</th><td>${data.customer_name}</td></tr>
-          <tr><th>Service Type</th><td>${data.service_type}</td></tr>
-          <tr><th>From Date</th><td>${data.from_date}</td></tr>
-          <tr><th>End Date</th><td>${data.end_date}</td></tr>
-          <tr><th>Duration</th><td>${data.duration}</td></tr>
-          <tr><th>Base Charges</th><td>${data.base_charges}</td></tr>
-          <tr><th>Total Amount</th><td>${data.total_amount}</td></tr>
-          <tr><th>Status</th><td>${data.status}</td></tr>
-          <tr><th>Created At</th><td>${data.created_at}</td></tr>
+            <tr><th>Invoice ID</th><td>${data.invoice_id}</td></tr>
+            <tr><th>Customer Name</th><td>${data.customer_name}</td></tr>
+            <tr><th>Mobile Number</th><td>${data.mobile_number}</td></tr>
+            <tr><th>Email</th><td>${data.customer_email}</td></tr>
+            <tr><th>Service ID</th><td>${data.service_id}</td></tr>
+            <tr><th>Total Amount</th><td>${data.total_amount}</td></tr>
+            <tr><th>Due Date</th><td>${data.due_date}</td></tr>
+            <tr><th>Status</th><td>${data.status}</td></tr>
+            <tr><th>Created At</th><td>${data.created_at}</td></tr>
+            <tr><th>Updated At</th><td>${data.updated_at}</td></tr>
         </table>
-      `;
-    }
+    `;
+}
+
     // Sample Data
     const data = Array.from({ length: 50 }, (_, i) => ({
       id: i + 1,

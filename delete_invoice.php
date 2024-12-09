@@ -10,7 +10,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
     // Check if the ID is a valid number (you can add more validation if needed)
     if ($invoiceId > 0) {
         // SQL query to delete the record
-        $deleteQuery = "DELETE FROM invoices WHERE id = ?";
+        $deleteQuery = "DELETE FROM invoice WHERE id = ?";
 
         // Prepare the statement
         if ($stmt = $conn->prepare($deleteQuery)) {
@@ -20,7 +20,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
             // Execute the query
             if ($stmt->execute()) {
                 // Successfully deleted, redirect back to the table page with a success message
-                header("Location: view_invoice.php?msg=Record deleted successfully");
+                  echo "<script>alert('Invoice deleted successfully.'); window.location.href='view_invoice.php';</script>";
                 exit; // Make sure to exit after the redirect
             } else {
                 // Error executing the query
