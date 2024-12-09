@@ -1,7 +1,7 @@
 <?php
 // Connect to the database
 include 'config.php';
-include 'navbar.php';
+// include 'navbar.php';
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
@@ -137,6 +137,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['assign_employee'])) {
   </style>
 </head>
 <body>
+  <?php
+  include 'navbar.php';
+  ?>
   <div class="container  mt-7">
     <div class="dataTable_card card">
       <!-- Card Header -->
@@ -162,8 +165,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['assign_employee'])) {
                 <th>S.no</th>
                 <th>Customer Name</th>
                 <th>Phone Number</th>
-                <th>Email</th>
-                <th>Enquiry Source</th>
+                <!-- <th>Email</th> -->
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Total Days</th>
+                <th>Total Price</th>
                 <th>Action</th>
                 <th>Assign Employee</th>
               </tr>
@@ -179,8 +185,10 @@ if ($result->num_rows > 0) {
                 <td>{$serial}</td>
                 <td>{$row['customer_name']}</td>
                 <td>{$row['contact_no']}</td>
-                <td>{$row['email']}</td>
-                <td>{$row['enquiry_source']}</td>
+             <td>{$row['from_date']}</td>
+             <td>{$row['end_date']}</td>
+                <td>{$row['total_days']}</td>
+                <td>{$row['service_price']}</td>
                 <td class='action-icons'>
                     <i class='fas fa-eye' style='cursor: pointer;' data-bs-toggle='modal' data-bs-target='#viewModal' onclick='viewDetails(".json_encode($row).")'></i>
                     <a href='update_service.php?id={$row['id']}'><i class='fas fa-edit'></i></a>
